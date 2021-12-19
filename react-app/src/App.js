@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import Subject from './components/Subject';
 import TOC from "./components/TOC";
-import Content from './components/Content'
+import Control from './components/Control';
+import Content from './components/Content';
+import Create from './components/Create'
 import './App.css';
 
 class App extends Component {
@@ -21,13 +23,35 @@ class App extends Component {
   }
 
   render() {
-    let _title, _desc = null;
-    if ( this.state.mode === 'welcome' ) {
-      _title = this.state.welcome.title;
-      _desc = this.state.welcome.desc;
-    } else if ( this.state.mode === 'read' ) {
-      _title = this.state.contents[0].title;
-      _desc = this.state.contents[0].desc;
+    let content;
+
+    switch( this.state.mode )
+    {
+      case "read":
+        content = (
+          <Content
+            mode={this.state.mode}
+            title={this.state.contents[ this.state.selected_id ].title}
+            desc={this.state.contents[ this.state.selected_id ].desc}
+            >
+          </Content>
+        );
+        break;
+
+      default:
+        content = (
+          <Create
+            onCreate={function(title, desc){
+              this.state.contents.push({
+                id:this.state.contents.length+1,
+                title,
+                desc
+              });
+  
+              this.setState({ contents:this.state.contents })
+            }.bind(this)}
+          ></Create>
+        );
     }
 
     return (
@@ -40,6 +64,13 @@ class App extends Component {
           }.bind(this)}>
         </Subject>
 
+        <Control
+          onChangeMode={function(mode){
+            this.setState({mode});
+          }.bind(this)}
+        >
+        </Control>
+
         <TOC
           onChangePage={function(selected_id){
             this.setState({mode:'read', selected_id:selected_id-1})
@@ -47,10 +78,7 @@ class App extends Component {
           data={this.state.contents}>
         </TOC>
 
-        <Content
-          title={this.state.contents[ this.state.selected_id ].title}
-          desc={this.state.contents[ this.state.selected_id ].desc}>
-        </Content>
+        {content}
       </div>
     )
   }
